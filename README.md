@@ -126,3 +126,25 @@ Ensured EC2 instances have proper IAM roles for ECS & ECR access.
 Accessed the app via ALB DNS Name instead of EC2 public IP.
 
 Verified app functionality with / and /health routes.
+
+
+## ✅** Deploying a Flask App on AWS EKS**
+
+**Create an EKS Cluster**
+
+eksctl create cluster --name flask-cluster --region us-east-1 --nodegroup-name flask-nodes --node-type t3.medium --nodes 2 --nodes-min 1 --nodes-max 3
+
+**Verify Cluster**
+
+kubectl get nodes
+kubectl get pods --all-namespaces
+
+**Exposing the Flask App with a LoadBalancer Service**
+
+kubectl expose deploy flask-app --port 5000 --type=LoadBalancer --name flask-service
+
+🧰✅ **Verifying Access**
+
+curl http://<EXTERNAL-IP>:8080  (Here external IP is AWS ALB DNS name)
+
+

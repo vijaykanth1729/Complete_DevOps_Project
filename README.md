@@ -1,15 +1,44 @@
-# Complete_DevOps_Project
-Using Most DevOps Tools to create and deploy this project
+# 📦 Complete DevOps Project
+
+This project demonstrates how to build, dockerize, and push a simple Python Flask application to AWS Elastic Container Registry (ECR) using standard DevOps practices and tools.
+
+---
+
+## 🧰 Tech Stack & Tools
+
+- Python (Flask)
+- Docker
+- Git & GitHub
+- AWS CLI
+- AWS ECR (Elastic Container Registry)
+
+---
+
+## 🖥️ Application Overview
+
+A simple **Flask application** with the following endpoints:
+
+- `/` – Home route returning a basic response
+- `/health` – Health check endpoint to verify the app status
+
+---
+
+## 🔧 Setup Instructions
+
+### ✅ Step 1: Install AWS CLI
+
+If not already installed:
+
+sudo yum install awscli  # For Amazon Linux/CentOS
+
   
-1) Written a Basic Python Flask Application with (/, /health) routes.
+## 🧰 Written a Basic Python Flask Application with (/, /health) routes.
 
-2) Install AWS CLI
+## 🧰  Dockerize the application
 
-3) Dockerize the application
+## 🧰 Pushed the image to ECR (Elastic Container Registry) 
 
-4) Pushed the image to ECR (Elastic Container Registry) 
-
-    steps: aws ecr create-repository --repository-name flask-app --regions us-east-1
+    ### ✅ Steps: aws ecr create-repository --repository-name flask-app --regions us-east-1
      
            aws ecr get-login-password --regions us-east-1 | docker login username AWS --password-stdin 329599630566.dkr.ecr.us-east-1.amazonaws.com/flask-app
 

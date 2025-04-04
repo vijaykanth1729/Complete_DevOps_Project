@@ -11,6 +11,7 @@ This project demonstrates how to build, dockerize, and push a simple Python Flas
 - Git & GitHub
 - AWS CLI
 - AWS ECR (Elastic Container Registry)
+- AWS ECS (Fargate & EC2 Launch Types.(With ALB))
 
 ---
 
@@ -90,4 +91,38 @@ Problem: ECS won’t automatically use the new image from ECR when you push upda
 | **Force New Deployment** | Replaces running tasks with new ones using the updated image             |
 
 
-      
+
+## ✅Deploying Flask App on ECS with EC2 Launch Type**
+
+## 🧰✅ 1. ECS Cluster Setup
+Created an ECS Cluster with EC2 launch type (not Fargate).
+
+Used ECS-optimized Amazon Linux 2 AMI for EC2 instances.
+
+## 🧰✅ 2. Task Definition
+Defined a new task definition specifying:
+
+Container Image: Pulled from AWS ECR
+
+Port Mapping: Exposed necessary ports (e.g., 5000:5000)
+
+Log Configuration: Enabled AWS CloudWatch logging
+
+Networking Mode: Bridge/AWSVPC
+
+## 🧰✅ 3. Service Creation & Load Balancer (ALB)
+Created an ECS Service running multiple tasks for high availability.
+
+Placed an Application Load Balancer (ALB) in front of the service.
+
+Configured Target Groups & Listeners to route traffic from ALB to ECS tasks.
+
+## 🧰✅ 4. Security & IAM Considerations
+Allowed ALB security group to route traffic to ECS tasks.
+
+Ensured EC2 instances have proper IAM roles for ECS & ECR access.
+
+## 🧰✅ 5. Verification & Testing
+Accessed the app via ALB DNS Name instead of EC2 public IP.
+
+Verified app functionality with / and /health routes.

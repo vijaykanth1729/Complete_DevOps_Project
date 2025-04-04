@@ -46,10 +46,48 @@ sudo yum install awscli  # For Amazon Linux/CentOS
         
            docker images  (Lists all images, then we need to tag the locally built image with ecr repo)
 
-           docker tag flask-app:latest 329599630566.dkr.ecr.us-east-1.amazonaws.com/flask-app:latest   (Here we are tagging flask-app:latest with ECR_REPO_URI:TAG)
 
-           docker push 329599630566.dkr.ecr.us-east-1.amazonaws.com/flask-app:latest   (This command pushes tagged image to AWS ECR REPO)
+## 🧰✅ Step 2: Deploy to AWS ECS (Fargate)
+Service Used: ECS (with Fargate launch type)
 
+**Why Fargate?**
+
+    No need to manage servers
+    
+    Scales automatically
+    
+    Ideal for getting started with containers on AWS
+
+**Key Concepts:**
+
+    Task Definition: Blueprint of container (image, port, CPU, memory)
+    
+    Service: Ensures desired count of tasks are running
+    
+    Cluster: Logical group to manage services
+
+## 🧰✅ Step 3: Handle Code Changes (New Image Versions)
+Problem: ECS won’t automatically use the new image from ECR when you push updates
+
+**Solution:**
+
+    Push the updated image to ECR
+    
+    Create a new task definition revision
+    
+    Update the ECS service to use the new revision
+    
+    Enable force new deployment
+
+**Why: ECS tasks are immutable and tied to specific task definitions**
+
+### 🧠 Theory Behind Revisions
+
+| Concept               | Reason                                                                 |
+|------------------------|------------------------------------------------------------------------|
+| **Task Definition**    | Ensures consistency in deployments; acts as a container blueprint       |
+| **Revisioning**        | Allows version control and rollback by tracking changes                 |
+| **Force New Deployment** | Replaces running tasks with new ones using the updated image             |
 
 
       

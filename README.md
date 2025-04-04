@@ -12,6 +12,9 @@ This project demonstrates how to build, dockerize, and push a simple Python Flas
 - AWS CLI
 - AWS ECR (Elastic Container Registry)
 - AWS ECS (Fargate & EC2 Launch Types.(With ALB))
+- AWS EKS (Managed EKS service with node group using eksctl)
+- Setup ArgoCD (Automatic Sync to GitHub repo with deployment manifests)
+- Integrating GitHub Actions to automate: (Docker image builds, Pushing to AWS ECR, ArgoCD deployments)
 
 ---
 

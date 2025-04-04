@@ -147,4 +147,55 @@ kubectl expose deploy flask-app --port 5000 --type=LoadBalancer --name flask-ser
 
 curl http://<EXTERNAL-IP>:8080  (Here external IP is AWS ALB DNS name)
 
+# 🚀 ArgoCD Setup & GitOps Deployment
+
+## **1️⃣ Install ArgoCD CLI (Optional but Recommended)**
+To manage ArgoCD from the command line, install the CLI:  
+
+```sh
+curl -sSL -o argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+chmod +x argocd
+sudo mv argocd /usr/local/bin/
+
+**Login to ArgoCD**
+After deploying ArgoCD, obtain the ELB DNS name from the LoadBalancer service:
+  kubectl get svc -n argocd
+
+Login to ArgoCD:
+
+argocd login <ARGOCD_ELB_DNS> --username admin --password <your-password>
+or using the default password:
+  kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 --decode
+
+**Register Your EKS Cluster with ArgoCD**
+  Allow ArgoCD to deploy workloads to your EKS cluster:
+
+argocd cluster add arn:aws:eks:us-east-1:<AWS_ACCOUNT_ID>:cluster/<EKS_CLUSTER_NAME>
+
+**Create an ArgoCD Application**
+  Use ArgoCD to create an application that automatically syncs from a GitHub repository:
+
+  argocd app create flask-app \
+    --repo https://github.com/<your-github-username>/<your-repo> \
+    --path k8s-manifests \
+    --dest-server https://kubernetes.default.svc \
+    --dest-namespace default \
+    --sync-policy automated
+
+5️⃣ Sync & Monitor ArgoCD Applications
+Manually sync the application (if needed):
+
+  argocd app sync flask-app
+
+Check application status:
+  argocd app get flask-app
+
+**List all applications:**
+  argocd app list
+**Delete an application:**
+  argocd app delete flask-app
+6️⃣ Access ArgoCD UI
+Open ArgoCD UI in the browser using the ELB DNS:
+
+https://<ARGOCD_ELB_DNS>
 

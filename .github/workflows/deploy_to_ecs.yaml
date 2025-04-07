@@ -36,7 +36,7 @@ env:
   ECR_REPOSITORY: flask-app
   ECS_SERVICE: flask-service
   ECS_CLUSTER: flask-fargate-cluster
-  ECS_TASK_DEFINITION: deployments/task-definition-flask.json
+  ECS_TASK_DEFINITION: ecs/task-definition-flask.json
   CONTAINER_NAME: flask-container
 
 permissions:
@@ -72,7 +72,7 @@ jobs:
         # Build a docker container and
         # push it to ECR so that it can
         # be deployed to ECS.
-        docker build -f deployments/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker build -f docker/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 

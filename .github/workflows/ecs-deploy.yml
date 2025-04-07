@@ -28,8 +28,8 @@ name: Deploy to Amazon ECS
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ "main" ]
+  # push:
+  #   branches: [ "main" ]
 
 env:
   AWS_REGION: us-east-1

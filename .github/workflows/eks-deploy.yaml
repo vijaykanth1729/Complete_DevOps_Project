@@ -46,7 +46,7 @@ jobs:
 
     - name: Deploy with Helm
       run: |
-        helm upgrade --install flask-app ./k8s/chart \
+        helm upgrade --install flask-app ./k8s/flask-app \
           --set image.repository=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY \
           --set image.tag=$IMAGE_TAG \
           --namespace default

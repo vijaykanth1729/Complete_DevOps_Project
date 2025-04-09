@@ -1,0 +1,5 @@
+appName: flask-app
+replica_count: 2
+image:
+  repository: 329599630566.dkr.ecr.us-east-1.amazonaws.com/flask-app
+  tag: 6ec7c2874e066d3d537a81f88d047cf35dcc1c0f

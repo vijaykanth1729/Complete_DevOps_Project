@@ -1,6 +1,6 @@
 # 📦 Complete DevOps Project
 
-This project demonstrates how to build, dockerize, and push a simple Python Flask application to AWS Elastic Container Registry (ECR) using standard DevOps practices and tools.
+This project demonstrates how to build, dockerize, and push a simple Python Flask application to AWS Elastic Container Registry (ECR), and deploy it using ECS (Fargate and EC2 launch types), EKS, ArgoCD, and GitHub Actions.
 
 ---
 
@@ -11,14 +11,14 @@ This project demonstrates how to build, dockerize, and push a simple Python Flas
 - Git & GitHub
 - AWS CLI
 - AWS ECR (Elastic Container Registry)
-- AWS ECS (Fargate & EC2 Launch Types.(With ALB))
+- AWS ECS (Fargate & EC2 Launch Types with ALB)
 - AWS EKS (Managed EKS service with node group using eksctl)
-- Setup ArgoCD (Automatic Sync to GitHub repo with deployment manifests)
-- Integrating GitHub Actions to automate: (Docker image builds, Pushing to AWS ECR, ArgoCD deployments)
+- ArgoCD (Automatic Sync to GitHub repo with deployment manifests)
+- GitHub Actions (CI/CD for Docker build, push to ECR, deploy with ArgoCD)
 
 ---
 
-## 🖥️ Application Overview
+## 🔤 Application Overview
 
 A simple **Flask application** with the following endpoints:
 
@@ -31,174 +31,231 @@ A simple **Flask application** with the following endpoints:
 
 ### ✅ Step 1: Install AWS CLI
 
-If not already installed:
-
+```bash
 sudo yum install awscli  # For Amazon Linux/CentOS
+```
 
-  
-## 🧰 Written a Basic Python Flask Application with (/, /health) routes.
+---
 
-## 🧰  Dockerize the application
+## 🧰 Write Basic Python Flask Application with (/, /health) routes.
 
-## 🧰 Pushed the image to ECR (Elastic Container Registry) 
+---
 
-    ### ✅ Steps: aws ecr create-repository --repository-name flask-app --regions us-east-1
-     
-           aws ecr get-login-password --regions us-east-1 | docker login username AWS --password-stdin 329599630566.dkr.ecr.us-east-1.amazonaws.com/flask-app
+## 🧰 Dockerize the Application
 
-           docker build -t flask-app -f deployments/Dockerfile .
-        
-           docker images  (Lists all images, then we need to tag the locally built image with ecr repo)
+```bash
+docker build -t flask-app -f deployments/Dockerfile .
+docker images  # Tag the image
+```
 
+---
 
-## 🧰✅ Step 2: Deploy to AWS ECS (Fargate)
-Service Used: ECS (with Fargate launch type)
+## 🧰 Push Image to ECR
+
+```bash
+aws ecr create-repository --repository-name flask-app --region us-east-1
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com
+
+docker tag flask-app <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/flask-app
+docker push <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/flask-app
+```
+
+---
+
+## ✅ Deploy to AWS ECS (Fargate)
 
 **Why Fargate?**
 
-    No need to manage servers
-    
-    Scales automatically
-    
-    Ideal for getting started with containers on AWS
+- No need to manage servers
+- Scales automatically
+- Ideal for beginners
 
 **Key Concepts:**
 
-    Task Definition: Blueprint of container (image, port, CPU, memory)
-    
-    Service: Ensures desired count of tasks are running
-    
-    Cluster: Logical group to manage services
+- Task Definition: Blueprint of container (image, port, CPU, memory)
+- Service: Ensures desired task count
+- Cluster: Logical group to manage services
 
-## 🧰✅ Step 3: Handle Code Changes (New Image Versions)
-Problem: ECS won’t automatically use the new image from ECR when you push updates
+**Handle Code Changes:**
 
-**Solution:**
+- Push updated image to ECR
+- Create new task definition revision
+- Update ECS service to use new revision
+- Enable force new deployment
 
-    Push the updated image to ECR
-    
-    Create a new task definition revision
-    
-    Update the ECS service to use the new revision
-    
-    Enable force new deployment
+### 🧠 Task Definition Revisions
 
-**Why: ECS tasks are immutable and tied to specific task definitions**
+| Concept               | Reason                                                  |
+|----------------------|----------------------------------------------------------|
+| Task Definition      | Container blueprint                                      |
+| Revisioning          | Version control and rollback                             |
+| Force New Deployment | Replace tasks with updated image                         |
 
-### 🧠 Theory Behind Revisions
+---
 
-| Concept               | Reason                                                                 |
-|------------------------|------------------------------------------------------------------------|
-| **Task Definition**    | Ensures consistency in deployments; acts as a container blueprint       |
-| **Revisioning**        | Allows version control and rollback by tracking changes                 |
-| **Force New Deployment** | Replaces running tasks with new ones using the updated image             |
+## ✅ Deploy to AWS ECS (EC2 Launch Type)
 
+1. **ECS Cluster Setup**
+   - Created ECS cluster using EC2 launch type
+   - Used ECS-optimized Amazon Linux 2 AMI
 
+2. **Task Definition**
+   - Pulled container image from ECR
+   - Port mapping (5000:5000)
+   - CloudWatch logging
+   - Networking mode: bridge/AWSVPC
 
-## ✅Deploying Flask App on ECS with EC2 Launch Type**
+3. **Service Creation & ALB**
+   - ECS service with multiple tasks
+   - ALB with Target Group and Listener rules
 
-## 🧰✅ 1. ECS Cluster Setup
-Created an ECS Cluster with EC2 launch type (not Fargate).
+4. **Security & IAM**
+   - ALB SG allows traffic to ECS
+   - IAM role allows ECS & ECR access
 
-Used ECS-optimized Amazon Linux 2 AMI for EC2 instances.
+5. **Verification**
+   - Access via ALB DNS
+   - Confirm routes `/` and `/health`
 
-## 🧰✅ 2. Task Definition
-Defined a new task definition specifying:
+---
 
-Container Image: Pulled from AWS ECR
+## ✅ Deploy to AWS EKS with eksctl
 
-Port Mapping: Exposed necessary ports (e.g., 5000:5000)
-
-Log Configuration: Enabled AWS CloudWatch logging
-
-Networking Mode: Bridge/AWSVPC
-
-## 🧰✅ 3. Service Creation & Load Balancer (ALB)
-Created an ECS Service running multiple tasks for high availability.
-
-Placed an Application Load Balancer (ALB) in front of the service.
-
-Configured Target Groups & Listeners to route traffic from ALB to ECS tasks.
-
-## 🧰✅ 4. Security & IAM Considerations
-Allowed ALB security group to route traffic to ECS tasks.
-
-Ensured EC2 instances have proper IAM roles for ECS & ECR access.
-
-## 🧰✅ 5. Verification & Testing
-Accessed the app via ALB DNS Name instead of EC2 public IP.
-
-Verified app functionality with / and /health routes.
-
-
-## ✅** Deploying a Flask App on AWS EKS**
-
-**Create an EKS Cluster**
-
-eksctl create cluster --name flask-cluster --region us-east-1 --nodegroup-name flask-nodes --node-type t3.medium --nodes 2 --nodes-min 1 --nodes-max 3
-
-**Verify Cluster**
+```bash
+eksctl create cluster \
+  --name flask-cluster \
+  --region us-east-1 \
+  --nodegroup-name flask-nodes \
+  --node-type t3.medium \
+  --nodes 2 \
+  --nodes-min 1 \
+  --nodes-max 3
 
 kubectl get nodes
 kubectl get pods --all-namespaces
+```
 
-**Exposing the Flask App with a LoadBalancer Service**
+**Expose Flask App**
 
+```bash
 kubectl expose deploy flask-app --port 5000 --type=LoadBalancer --name flask-service
+```
 
-🧰✅ **Verifying Access**
+**Verify Access**
 
-curl http://<EXTERNAL-IP>:8080  (Here external IP is AWS ALB DNS name)
+```bash
+curl http://<EXTERNAL-IP>:8080
+```
+
+---
 
 # 🚀 ArgoCD Setup & GitOps Deployment
 
-## **1️⃣ Install ArgoCD CLI (Optional but Recommended)**
-To manage ArgoCD from the command line, install the CLI:  
+## 1️⃣ Install ArgoCD CLI
 
-```sh
+```bash
 curl -sSL -o argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
 chmod +x argocd
 sudo mv argocd /usr/local/bin/
+```
 
-**Login to ArgoCD**
-After deploying ArgoCD, obtain the ELB DNS name from the LoadBalancer service:
-  kubectl get svc -n argocd
+## Login to ArgoCD
 
-Login to ArgoCD:
-
+```bash
+kubectl get svc -n argocd
 argocd login <ARGOCD_ELB_DNS> --username admin --password <your-password>
-or using the default password:
-  kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 --decode
+# or
+kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 --decode
+```
 
-**Register Your EKS Cluster with ArgoCD**
-  Allow ArgoCD to deploy workloads to your EKS cluster:
+## Register EKS Cluster
 
+```bash
 argocd cluster add arn:aws:eks:us-east-1:<AWS_ACCOUNT_ID>:cluster/<EKS_CLUSTER_NAME>
+```
 
-**Create an ArgoCD Application**
-  Use ArgoCD to create an application that automatically syncs from a GitHub repository:
+## Create ArgoCD Application
 
-  argocd app create flask-app \
-    --repo https://github.com/<your-github-username>/<your-repo> \
-    --path k8s-manifests \
-    --dest-server https://kubernetes.default.svc \
-    --dest-namespace default \
-    --sync-policy automated
+```bash
+argocd app create flask-app \
+  --repo https://github.com/<your-github-username>/<your-repo> \
+  --path k8s-manifests \
+  --dest-server https://kubernetes.default.svc \
+  --dest-namespace default \
+  --sync-policy automated
+```
 
-5️⃣ Sync & Monitor ArgoCD Applications
-Manually sync the application (if needed):
+## Sync, Monitor, and Access ArgoCD
 
-  argocd app sync flask-app
+```bash
+argocd app sync flask-app
+argocd app get flask-app
+argocd app list
+argocd app delete flask-app
+```
 
-Check application status:
-  argocd app get flask-app
+Access ArgoCD UI:
 
-**List all applications:**
-  argocd app list
-**Delete an application:**
-  argocd app delete flask-app
-6️⃣ Access ArgoCD UI
-Open ArgoCD UI in the browser using the ELB DNS:
-
+```
 https://<ARGOCD_ELB_DNS>
+```
+
+---
+
+## ✨ CI/CD Pipeline with GitHub Actions & ArgoCD
+
+### 🛠️ Workflow Overview
+
+1. Checkout code
+2. Login to AWS
+3. Build Docker image
+4. Push to ECR
+5. Update K8s manifests
+6. Commit & Push changes
+7. ArgoCD auto-sync
+
+### 📁 GitHub Actions Workflow (Simplified)
+
+```yaml
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<ROLE_NAME>
+          aws-region: us-east-1
+
+      - name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, Tag, and Push Docker image
+        run: |
+          IMAGE_TAG=$(date +%s)
+          docker build -t <ECR_REPO_URI>:${IMAGE_TAG} .
+          docker push <ECR_REPO_URI>:${IMAGE_TAG}
+
+      - name: Update K8s Manifest
+        run: |
+          sed -i "s|image: .*|image: <ECR_REPO_URI>:${IMAGE_TAG}|" k8s-manifests/deployment.yaml
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add k8s-manifests/deployment.yaml
+          git commit -m "Update image to ${IMAGE_TAG}"
+          git push
+```
+
+---
+
+This complete setup ensures continuous integration and deployment using containerized applications deployed on AWS ECS/EKS with GitOps via ArgoCD.
 

@@ -44,7 +44,7 @@ sudo yum install awscli  # For Amazon Linux/CentOS
 ## 🧰 Dockerize the Application
 
 ```bash
-docker build -t flask-app -f deployments/Dockerfile .
+docker build -t flask-app -f docker/Dockerfile .
 docker images  # Tag the image
 ```
 
